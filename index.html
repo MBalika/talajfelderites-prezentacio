@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Talajfelderítés — előadás (vetíthető)</title>
+<style>
+:root{
+  --mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --body:'Segoe UI',system-ui,-apple-system,sans-serif;
+  --ink:#16202e; --ink2:#3a4858; --ink3:#6b7888; --line:#dfe4ec; --paper:#f7f9fc;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:#0c1320;font-family:var(--body);color:var(--ink)}
+.stage{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(1200px 700px at 50% 40%,#16243a,#0a111d)}
+.deck{width:1280px;height:720px;position:relative;transform-origin:center center;border-radius:6px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.55);background:#fff}
+.slide{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .45s ease, transform .45s ease;transform:translateX(24px);padding:0;display:flex;flex-direction:column;background:#fff}
+.slide.on{opacity:1;visibility:visible;transform:none;z-index:2}
+.slide.prev{transform:translateX(-24px)}
+/* fejléc */
+.head{padding:34px 56px 0;flex:none}
+.kicker{font-family:var(--mono);font-size:17px;letter-spacing:.12em;text-transform:uppercase;font-weight:700;margin-bottom:8px}
+.title{font-weight:800;font-size:40px;line-height:1.1;letter-spacing:-.01em;color:var(--ink)}
+.rule{height:4px;width:96px;border-radius:2px;margin-top:14px}
+.bodyA{flex:1;min-height:0;padding:22px 56px 40px;display:flex;flex-direction:column;gap:14px}
+/* listák */
+ul.big{list-style:none;display:flex;flex-direction:column;gap:14px;margin-top:4px}
+ul.big li{position:relative;padding-left:34px;font-size:25px;line-height:1.35;color:var(--ink2)}
+ul.big li::before{content:'';position:absolute;left:4px;top:13px;width:12px;height:12px;border-radius:3px}
+ul.big li b{color:var(--ink)}
+ul.sub{list-style:none;margin:8px 0 0 34px;display:flex;flex-direction:column;gap:7px}
+ul.sub li{position:relative;padding-left:22px;font-size:20px;color:var(--ink3)}
+ul.sub li::before{content:'–';position:absolute;left:0;color:var(--ink3)}
+.lead{font-size:27px;line-height:1.4;color:var(--ink2)}
+.lead b{color:var(--ink)}
+.tag{display:inline-block;font-family:var(--mono);font-size:15px;font-weight:700;padding:4px 12px;border-radius:20px;margin:2px 4px 2px 0}
+/* kép-elrendezések */
+.imgwrap{flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
+.imgwrap img{max-width:100%;max-height:100%;border-radius:10px;box-shadow:0 8px 26px rgba(15,30,50,.18);object-fit:contain}
+.cap{font-family:var(--mono);font-size:15px;color:var(--ink3);text-align:center;margin-top:10px;flex:none}
+.two{display:grid;grid-template-columns:1.15fr 1fr;gap:34px;flex:1;min-height:0;align-items:center}
+.two .col-img{height:100%;display:flex;align-items:center;justify-content:center}
+.two .col-img img{max-width:100%;max-height:100%;border-radius:10px;box-shadow:0 8px 26px rgba(15,30,50,.18);object-fit:contain}
+.gal{flex:1;min-height:0;display:grid;gap:16px;align-content:center}
+.gal.g2{grid-template-columns:1fr 1fr}.gal.g3{grid-template-columns:1fr 1fr 1fr}
+.gal figure{display:flex;flex-direction:column;height:100%;min-height:0}
+.gal .gimg{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;background:#f1f3f7;border-radius:10px;overflow:hidden}
+.gal img{max-width:100%;max-height:100%;object-fit:cover;width:100%;height:100%}
+.gal figcaption{font-family:var(--mono);font-size:14px;color:var(--ink3);text-align:center;margin-top:7px}
+table.t{width:100%;border-collapse:collapse;font-size:21px;margin-top:6px}
+table.t th,table.t td{padding:11px 16px;border-bottom:1px solid var(--line);text-align:left}
+table.t th{font-family:var(--body);font-weight:700;color:#fff}
+table.t td.m{font-family:var(--mono)}
+/* TÍMLAP / SZEKCIÓ / ZÁRÓ */
+.slide.title-s,.slide.closing-s{justify-content:center;align-items:flex-start;padding:0 80px}
+.title-s .ti-eyebrow{font-family:var(--mono);font-size:19px;letter-spacing:.16em;text-transform:uppercase;font-weight:700;color:#7fa8d8;margin-bottom:18px}
+.title-s .ti-h{font-weight:900;font-size:74px;line-height:1.02;letter-spacing:-.02em;color:#fff}
+.title-s .ti-sub{font-size:26px;color:#c9d6e8;margin-top:24px;max-width:880px}
+.title-s .ti-meta{font-family:var(--mono);font-size:18px;color:#9fb3cc;margin-top:28px}
+.title-s{background:linear-gradient(135deg,#16314f 0%,#0e2138 60%,#142b1f 100%)}
+.section-s{align-items:flex-start;justify-content:center;padding:0 90px;color:#fff}
+.section-s .se-n{font-family:var(--mono);font-size:130px;font-weight:800;line-height:.9;opacity:.32}
+.section-s .se-t{font-weight:900;font-size:62px;line-height:1.05;letter-spacing:-.015em;margin-top:6px}
+.section-s .se-s{font-size:25px;margin-top:18px;max-width:880px;opacity:.92}
+.closing-s{background:linear-gradient(135deg,#16314f,#0e2138);color:#fff}
+.closing-s .cl-h{font-weight:900;font-size:60px;color:#fff}
+.closing-s .cl-t{font-size:19px;line-height:1.55;color:#c9d6e8;margin-top:22px;max-width:920px}
+.closing-s img.lg{max-width:520px;width:70%;margin-top:30px;background:#fff;padding:12px 16px;border-radius:10px}
+/* HUD */
+.hud{position:fixed;left:0;right:0;bottom:0;height:6px;background:rgba(255,255,255,.08);z-index:50}
+.hud .fill{height:100%;background:#7fa8d8;width:0;transition:width .3s}
+.counter{position:fixed;right:18px;bottom:16px;font-family:var(--mono);font-size:13px;color:#9fb3cc;z-index:50}
+.seclabel{position:fixed;left:18px;bottom:14px;font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;color:#9fb3cc;z-index:50;text-transform:uppercase}
+.navbtn{position:fixed;top:50%;transform:translateY(-50%);z-index:60;width:46px;height:46px;border-radius:50%;border:none;background:rgba(255,255,255,.12);color:#fff;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.navbtn:hover{background:rgba(255,255,255,.26)}
+.navbtn.l{left:14px}.navbtn.r{right:14px}
+.tools{position:fixed;top:14px;right:16px;z-index:60;display:flex;gap:8px}
+.tools button{border:none;background:rgba(255,255,255,.12);color:#fff;font-family:var(--mono);font-size:12px;padding:7px 11px;border-radius:7px;cursor:pointer}
+.tools button:hover{background:rgba(255,255,255,.26)}
+/* MENÜ overlay */
+.menu{position:fixed;inset:0;z-index:90;background:rgba(8,14,24,.96);display:none;flex-direction:column;padding:48px 56px;overflow:auto}
+.menu.open{display:flex}
+.menu h3{color:#fff;font-size:24px;margin-bottom:20px;font-weight:800}
+.menu .mgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px}
+.menu .mitem{text-align:left;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#dbe6f4;border-radius:9px;padding:12px 14px;cursor:pointer;font-size:15px;font-family:var(--body)}
+.menu .mitem:hover{background:rgba(127,168,216,.22)}
+.menu .mitem .mn{font-family:var(--mono);font-size:12px;color:#7fa8d8;display:block;margin-bottom:3px}
+.hint{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);font-family:var(--mono);font-size:12px;color:#8aa0bb;z-index:50;opacity:.85}
+@media (max-width:700px){.hint{display:none}}
+.nowrap{white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="stage"><div class="deck" id="deck"></div></div>
+
+<button class="navbtn l" id="prevBtn" aria-label="Előző">‹</button>
+<button class="navbtn r" id="nextBtn" aria-label="Következő">›</button>
+<div class="tools">
+  <button id="menuBtn" title="Szekciók (M)">☰ Menü</button>
+  <button id="fsBtn" title="Teljes képernyő (F)">⛶ Teljes</button>
+</div>
+<div class="seclabel" id="secLabel"></div>
+<div class="counter" id="counter"></div>
+<div class="hud"><div class="fill" id="hudFill"></div></div>
+<div class="hint" id="hint">← → vagy szóköz: lapozás · F: teljes képernyő · M: menü</div>
+<div class="menu" id="menu"><h3>Ugrás szekcióra</h3><div class="mgrid" id="menuGrid"></div></div>
+
+<script>
+/* ───────── szekciók (szín + név) ───────── */
+const SEC={
+  cel:{n:'A talajfelderítés célja',c:'#2f5d8a'},
+  adat:{n:'Adatgyűjtés',c:'#1f8aa0'},
+  furas:{n:'Talajfeltárás · Fúrások',c:'#b06a2c'},
+  godor:{n:'Talajfeltárás · Kutatógödör',c:'#9c7a2c'},
+  minta:{n:'Talajfeltárás · Talajminták',c:'#a8553a'},
+  geofiz:{n:'Talajfeltárás · Geofizika',c:'#4a7a3a'},
+  szonda:{n:'Talajfeltárás · Szondázások',c:'#3d6aa0'},
+  jelentes:{n:'Talajvizsgálati jelentés',c:'#6a4f8c'},
+  feltart:{n:'Feltártság mértéke',c:'#2e7d4f'},
+  viz:{n:'Talajvíz felderítése',c:'#2f6aa8'}
+};
+const I='img/';
+/* ───────── diák ───────── */
+const SL=[
+ {type:'title', t:'Talajfelderítés', sub:'Az altalaj megismerése — a biztonságos és gazdaságos alapozás első lépése. Interaktív, vetíthető előadás.', meta:'Alapozás · BME Építőmérnöki Kar · Geotechnika és Mérnökgeológia Tanszék · Dr. Móczár Balázs'},
+
+ {type:'section', sec:'cel', n:'01'},
+ {type:'lead', sec:'cel', t:'Mi a talajfelderítés célja?', lead:'Az altalaj <b>rétegződésének</b>, a rétegek <b>anyagának</b> és a <b>talajvízszintnek</b> a meghatározása — hogy kiválasztható legyen a <b>legmegfelelőbb alapozási mód</b>, biztonságosan és gazdaságosan.'},
+ {type:'bullets', sec:'cel', t:'A talajfelderítés részei', items:[
+   '<b>Adatgyűjtés</b> — helyszíni szemle és adattári (meglévő) adatok',
+   '<b>Talajfeltárás</b> — fúrások, kutatógödör, mintavétel, geofizika, szondázások',
+   '<b>Talajvizsgálati jelentés</b> — az eredmények bemutatása és értékelése'], note:'A felderítés mélysége és sűrűsége a létesítmény jellegétől és a talajviszonyoktól függ.'},
+
+ {type:'section', sec:'adat', n:'02'},
+ {type:'bullets', sec:'adat', t:'Helyszíni szemle — főbb szempontok', items:[
+   'A környező épületek <b>alapozási módja</b> ismert-e',
+   '<b>Káros süllyedésre</b> utaló repedések a szomszéd épületeken',
+   'A <b>talajvíz</b> helyzete, ingadozása; pincék szigeteltsége',
+   '<b>Csúszásveszély</b> domboldalon: fák dőlése, vízkedvelő növényzet',
+   'Van-e <b>feltöltés</b>; <b>aláüregelt</b>-e a terület (bánya, pince, alagút)']},
+ {type:'bullets', sec:'adat', t:'Mit árul el a helyszín?', items:[
+   '<b>Kérdezzük ki a lakókat:</b> volt-e korábbi építmény, felszíni bánya, feltöltés; az ásott kút vízszintje és ingadozása',
+   '<b>Növényzet:</b> vízkedvelő (nád, sás, fűzfa) → magas talajvíz; egyes fajok adott talajra utalnak',
+   '<b>Mélyfekvés, elhagyott medrek</b> közelében puha, szerves talajok valószínűek',
+   '<b>Aláüregelés:</b> pince- és bányakataszter — de sok a feltáratlan, ismeretlen üreg is'], note:'Különösen fontos a szemle, ha nem új épületet terveznek, hanem egy meglévő károsodását vizsgáljuk.'},
+ {type:'gallery', sec:'adat', t:'A helyszíni szemle jelei', g:2, imgs:[
+   {src:'szemle-falrepedes.jpg',cap:'Süllyedésre utaló falrepedés'},
+   {src:'szemle-ferde-fak.jpg',cap:'Csúszásra utaló ferde fák'}]},
+ {type:'two', sec:'adat', t:'Adattári adatok — földtani térképek', img:'foldtani-terkep-fedett-uj.jpg', items:[
+   '<b>Fedetlen</b> térkép: az alapkőzet (harmadidőszaki — oligocén / miocén / pannon)',
+   '<b>Fedett</b> térkép: a rajta fekvő negyedidőszaki (holocén / pleisztocén) takaró',
+   '<b>Morfológiai</b> térkép (főleg Bp.): feltöltés, eltemetett meder, csúszásveszély, szulfáttartalom',
+   '<b>Korábbi feltárások</b>: ÉGA (Építési Geotechnikai Adattár), MBFSZ; talajvíz-térképek (FTV 1981 Atlasz)'], cap:'Földtani térkép (fedett)'},
+ {type:'gallery', sec:'adat', t:'Adattári források', g:3, imgs:[
+   {src:'pelda-morfologiai.jpg',cap:'Morfológiai térkép'},
+   {src:'adattari-furasok-bp.jpg',cap:'Adattári fúrások (Bp.)'},
+   {src:'pelda-talajviz.jpg',cap:'Talajvízszint-térkép'}]},
+
+ {type:'section', sec:'furas', n:'03', t2:'Talajfeltárás'},
+ {type:'bullets', sec:'furas', t:'Közvetlen vagy közvetett feltárás?', items:[
+   '<b>Közvetlen</b> — ténylegesen feltárjuk a talajt: <b>fúrás</b> és <b>kutatógödör</b>. Látjuk a rétegződést, <b>mintát veszünk</b>, mérjük a vízszintet.',
+   '<b>Közvetett</b> — nem tárjuk fel, csak hatást gyakorlunk rá: <b>geofizika</b> és <b>szondázás</b> — <b>nincs mintavétel</b>.',
+   'A közvetett módszerek olcsóbbak és gyorsak, de <b>nem helyettesítik</b> a fúrást/mintavételt — csak azzal együtt, kalibrálva.'], note:'Ezért a fúrás + laborvizsgálat marad a gerinc; a szondázás és a geofizika kiegészít és sűrít.'},
+ {type:'two', sec:'furas', t:'Kisátmérőjű fúrás — kézi (hordozható)', img:'furas-borro-hordozhato.jpg', items:[
+   'Átmérő <b>55–90 mm</b>, jellemzően <b>5–6 m</b> (kedvező esetben 8–10 m); zavart minta',
+   'Klasszikus eszköz a svéd <b>BORRO</b>: nagy nyomaték, kis fordulat (dugóhúzó-elv)',
+   '<b>Veréses magcső</b>: sliccelt, élesedő magcső → a vékony rétegek is jól azonosíthatók',
+   '<b>+</b> kicsi, mozgatható · <b>–</b> időigényes, védcsövezésre alkalmatlan'], cap:'Hordozható kézi fúrás (BORRO)'},
+ {type:'two', sec:'furas', t:'Kézi — benzinmotoros / gépi spirál', img:'furas-benzinmotoros.jpg', items:[
+   'Benzinmotoros: könnyebb, olcsóbb, <b>nagy fordulat</b> → mintát összedarálja',
+   'Gépi (folyamatos) spirál: jellemzően kisebb <b>lánctalpas</b> gépek',
+   '<b>Gyorsabb</b>, nagyobb mélység, a dolgozókat kíméli'], cap:'Benzinmotoros kézi fúrógép'},
+ {type:'two', sec:'furas', t:'Nagyátmérőjű gépi spirálfúrás', img:'furogep-nagy.jpg', items:[
+   '<b>+</b> nagy feltárásmennyiségnél gazdaságos, <b>50–60 m</b>-ig mélyíthető',
+   '<b>–</b> kis mennyiségnél gazdaságtalan; nem minden helyszín járható',
+   'Nehezen megközelíthető helyre <b>lánctalpas</b> gép, teherautón szállítva'], cap:'Nagyátmérőjű fúrógép'},
+ {type:'two', sec:'furas', t:'Üreges csőspirál (Hollow stem auger)', img:'csospiral-furas-kozben.jpg', items:[
+   'A csőspirál elejéhez <b>üreges vágófej</b> csatlakozik',
+   'A spirál belsejében <b>mintavevő</b> működtethető — együtt vagy függetlenül',
+   'Folyamatos fúrás melletti zavartalanabb mintavétel'], cap:'Csőspirálos fúrás'},
+ {type:'gallery', sec:'furas', t:'GEOBOR’S technológia', g:3, imgs:[
+   {src:'geobors-furas.jpg',cap:'GEOBOR’S fúrás'},
+   {src:'geobors-eszkozok.jpg',cap:'Eszközök'},
+   {src:'geobors-magladak.jpg',cap:'Magládák'}], note:'Folyamatos magminta PVC-csőben (triplafalú berendezés) · 101 mm mintaátmérő · 1,5–3 m maghossz.'},
+
+ {type:'section', sec:'godor', n:'04', sub:'Talajfeltárás — kutatógödör'},
+ {type:'two', sec:'godor', t:'Kutatógödör', img:'kutatogodor.jpg', items:[
+   '<b>+</b> a talajrétegződés részletesen megfigyelhető',
+   '<b>+</b> alkalmas meglévő alapok feltárására',
+   '<b>–</b> csak kis mélységig gazdaságos',
+   '<b>–</b> 2–3 m alatt földmegtámasztás kell'], cap:'Kutatógödör'},
+
+ {type:'section', sec:'minta', n:'05', sub:'Talajfeltárás — talajminták'},
+ {type:'bullets', sec:'minta', t:'Talajminták — osztályok és kategóriák', items:[
+   'A mintákat <b>zavartság</b> szerint 1–5 <b>minőségi osztályba</b> soroljuk',
+   'A mintavételi <b>módszereket</b> A, B, C <b>kategóriába</b>',
+   '<b>A</b> kategória → 1–5 · <b>B</b> → 3–5 · <b>C</b> → 5 osztályú minta nyerhető'], note:'Szabvány: MSZE CEN ISO/TS 22475-1.'},
+ {type:'gallery', sec:'minta', t:'Zavartalan és zavart minta', g:3, imgs:[
+   {src:'zavartalan-mintavetel.jpg',cap:'Zavartalan (1–2. o.)'},
+   {src:'zavart-mintavetel.jpg',cap:'(Részben) zavart (3–4. o.)'},
+   {src:'zavart-minta-zacskoban.jpg',cap:'Teljesen zavart (5. o.)'}]},
+
+ {type:'section', sec:'geofiz', n:'06', sub:'Talajfeltárás — geofizikai mérések'},
+ {type:'two', sec:'geofiz', t:'Elektromágneses mérés', img:'geofiz-elektromagneses.jpg', items:[
+   'A műszer indukcióval <b>örvényáramokat</b> kelt → a talaj <b>vezetőképessége</b>',
+   'Hordozható / kiskocsis; adott mélységre <b>szelvény és térkép</b>',
+   'Falmaradványok, csővezetékek, <b>üregek</b>; réteghatár, talajvízfelszín'], cap:'Elektromágneses mérés'},
+ {type:'two', sec:'geofiz', t:'Földradar (GPR)', img:'geofiz-foldradar.jpg', items:[
+   'Nagyfrekvenciás antennával <b>fókuszált EM-hullámok</b> a talajba',
+   'A réteghatárokról <b>visszavert</b> hullámok ideje és intenzitása',
+   'Szelvény / rácsháló → réteghatárok és objektumok <b>mélysége, helyzete</b>'], cap:'Földradar (GPR) mérés'},
+ {type:'two', sec:'geofiz', t:'Geoelektromos tomográfia', img:'geofiz-geoelektromos.jpg', items:[
+   '<b>Multielektródás</b> szelvényezés — egyenáramú geofizika legkorszerűbbje',
+   'Elektródák a talajba, vezetékkel a műszerhez; terítés akár <b>több száz m</b>',
+   'A <b>fajlagos ellenállás</b> mintázatából a rétegek lehatárolása'], cap:'Geoelektromos szelvényezés'},
+ {type:'gallery', sec:'geofiz', t:'Mágneses mérés és szeizmika', g:2, imgs:[
+   {src:'geofiz-magneses.jpg',cap:'Mágneses mérés (magnetométer)'},
+   {src:'geofiz-szeizmika.jpg',cap:'Szárazföldi szeizmika (geofonok)'}], note:'Mágneses: a Föld mágneses tere, kontaktus nélkül, szelvény/rácsháló. Szeizmika: gerjesztett rugalmas hullámok, geofonok, terítés akár több km.'},
+
+ {type:'section', sec:'szonda', n:'07', sub:'Talajfeltárás — szondázások'},
+ {type:'bullets', sec:'szonda', t:'Szondázások — mi és hogyan', items:[
+   'Felszínről rudazatot <b>nyomunk / ütögetünk / csavarunk</b> a talajba',
+   'A <b>behatolási ellenállásból</b> következtetünk a talaj tulajdonságaira',
+   '<b>Nincs mintavétel</b> (kivéve SPT)',
+   'Statikus / dinamikus: <b>folyamatos</b> adat · VST, SPT, MPT, DMT: <b>szakaszos</b>'], note:'Csak kiegészítő vizsgálat — nem helyettesíti a fúrást/mintavételt, csak azzal együtt, kalibrálva használható (különösen jó tapasztalati grafikonok a CPT-hez).'},
+ {type:'two', sec:'szonda', t:'CPT(u) — statikus szondázás', img:'cpt-szondazo-teherauto.jpg', items:[
+   'Cone Penetration Test — <b>folyamatos</b> lenyomás állandó sebességgel',
+   'Mért: <b>csúcsellenállás</b> q<sub>c</sub>, <b>palástsúrlódás</b> f<sub>s</sub>, <b>pórusvíznyomás</b> u',
+   'Nehéz teherautó vagy lánctalpas hordozó adja a leszorítóerőt'], cap:'CPT szondázó jármű'},
+ {type:'gallery', sec:'szonda', t:'CPT — a csúcs', g:2, imgs:[
+   {src:'cpt-csucs.jpg',cap:'CPTu mérőcsúcs'},
+   {src:'cpt-belso.jpg',cap:'A csúcs belső felépítése'}]},
+ {type:'bullets', sec:'szonda', t:'CPT — mit ad megbízhatóan?', items:[
+   '<b>Megbízhatóan:</b> talajtípus, talajrétegződés, pórusvíznyomás, cölöpteherbírás',
+   '<b>Közepesen:</b> szemcsés talaj φ′, kötött talaj drénezetlen nyírószilárdsága (c<sub>u</sub>)'], note:'A CPT a talajrétegződés és a cölöptervezés egyik legértékesebb terepi vizsgálata.'},
+ {type:'two', sec:'szonda', t:'DP — dinamikus szondázás', img:'dph-szondazas.jpg', items:[
+   'Dynamic Probe — <b>ejtősúly</b> veri a kúpos csúcsot (90°)',
+   'Mérjük az adott behatoláshoz tartozó <b>ütésszámot</b>',
+   'Típusok: <b>DPL / DPM / DPH / DPSH</b> (egyre nehezebb ejtősúly)'], cap:'Dinamikus szondázás (DP)'},
+ {type:'bullets', sec:'szonda', t:'DP — alkalmazás', items:[
+   '<b>Közepesen:</b> talajrétegződés, szemcsés talajok (relatív) tömörsége',
+   '<b>Jól:</b> homokban · <b>közepesen:</b> kavicsban']},
+ {type:'two', sec:'szonda', t:'SPT — Standard Penetration Test', img:'spt-verses.jpg', items:[
+   'Furatból, <b>ejtősúlyos</b> verés; szabványos eszköz és energia',
+   'Az <b>N ütésszám</b> a jellemző mért adat',
+   '<b>Mintavétellel</b> jár → a talajtípus is meghatározható'], cap:'SPT verés a furatban'},
+ {type:'two', sec:'szonda', t:'VST — szárnyas nyírószondázás', img:'vst-szarnyas.jpg', items:[
+   'Vane Shear Test — <b>szárnyas fej</b> elforgatása a talajban',
+   'A nyomatékból <b>puha talajok drénezetlen nyírószilárdsága</b> (c<sub>u</sub>)',
+   'Jól: puha iszap/agyag, <b>tőzeg / szerves</b> talajok'], cap:'Szárnyas nyírószonda'},
+ {type:'two', sec:'szonda', t:'Presszióméter (MPT / SBP)', img:'preszsziometer-menard.jpg', items:[
+   'Furatban <b>kitáguló henger</b> nyomja a talajt → terhelés–tágulás görbe',
+   'Előfúrt (Menard, MPT) vagy <b>önlefúró</b> (SBP) változat',
+   '<b>Jól:</b> vízszintes földnyomás, terhelés–alakváltozás összefüggés'], cap:'Menard-féle presszióméter'},
+ {type:'two', sec:'szonda', t:'Lapdilatométer (DMT)', img:'dmt-eszkoz.jpg', items:[
+   'Lapos <b>acélpenge</b> membránját nyomással kitágítjuk',
+   'Főleg <b>finomszemcsés</b> talajban',
+   'Meghatározható: c<sub>u</sub>, E<sub>oed</sub>, γ<sub>sat</sub>, K<sub>0</sub>, OCR'], cap:'DMT lapdilatométer'},
+ {type:'bullets', sec:'szonda', t:'Paraméterek szondázásból', items:[
+   'Jórészt <b>empirikus</b> összefüggések',
+   '<b>Helyszín- és geológiafüggő</b>',
+   'Óvatos használat, <b>kalibráció</b> a helyi talajra'], note:'A szondázás gyors és folytonos, de a paraméterek tapasztalati képletekből jönnek — laborvizsgálattal érdemes hitelesíteni.'},
+
+ {type:'section', sec:'jelentes', n:'08'},
+ {type:'bullets', sec:'jelentes', t:'Talajvizsgálati jelentés', items:[
+   'Helyszín, létesítmény bemutatása',
+   'Terepi és labor<b>vizsgálatok</b> körülményei és eredményei',
+   'Geológiai adatok, <b>szeizmicitás</b>, talajvíz',
+   'Az információk <b>értékelése</b>, geotechnikai paraméterek, javaslatok']},
+ {type:'gallery', sec:'jelentes', t:'Az eredmények bemutatása', g:3, imgs:[
+   {src:'peldaszelvenyek-helyszinrajz.jpg',cap:'Feltárási helyszínrajz'},
+   {src:'pelda-furasszelveny.jpg',cap:'Fúrásszelvény'},
+   {src:'pelda-retegszelveny.jpg',cap:'Réteg- / hossz-szelvény'}]},
+
+ {type:'section', sec:'feltart', n:'09'},
+ {type:'bullets', sec:'feltart', t:'Feltártság mértéke', items:[
+   '<b>Mennyiség</b> — hány feltárás',
+   '<b>Mélység</b> — meddig (a „határmélységig", amíg a teher hat)',
+   '<b>Minőség</b> — milyen módszerekkel'], note:'Az MSZ EN 1997-2 javaslatai szerint — a rétegződésnek átfogóan megítélhetőnek kell lennie.'},
+ {type:'bullets', sec:'feltart', t:'Javasolt mélység és távolság', items:[
+   'Különálló alaptest: <b>z<sub>a</sub> ≥ 4–6 m</b> és z<sub>a</sub> ≥ 3,0·b<sub>min</sub>',
+   'Lemezalap: <b>z<sub>a</sub> ≥ 1,5·b<sub>B</sub></b> (b<sub>B</sub> a kisebbik szélesség)',
+   'Kisebb épület: <b>min. 2–3</b> feltárás',
+   'Magasépület / csarnok: min. 3, max. <b>25–40 m</b>-re; nagy terület: <b>40–60 m</b> háló'], note:'Hídnál támaszonként 1–2 fúrás + CPT; speciális szerkezetnél min. 3 (legalább egy CPT).'},
+
+ {type:'section', sec:'viz', n:'10'},
+ {type:'bullets', sec:'viz', t:'Talajvíz felderítése — típusok', items:[
+   '1 szabad felszínű · 2 nyomás alatti · 3 alsó emelet',
+   '4 vízdóm · 5 lebegő talajvíz · 6 altalajvíz',
+   '<b>„Értelmezett" vízszintek:</b> megütött / nyugalmi, becsült max. (karakterisztikus) / min., építési, <b>mértékadó (tervezési)</b>']},
+ {type:'bullets', sec:'viz', t:'Vízkémia és agresszivitás', items:[
+   'Fő jellemzők: <b>szulfátion</b> és <b>pH</b> (sok más mellett)',
+   'Betonszerkezetre kitéti osztályok (MSZ 4798-1): <b>XA1 / XA2 / XA3</b>',
+   '< 200 mg/l nem agresszív · 200–600 XA1 · 600–3000 XA2 · 3000–6000 XA3'], note:'Hol számít: alapozási sík felvétele, munkagödör-víztelenítés, felúszás, betontartósság.'},
+
+ {type:'closing', t:'Köszönöm a figyelmet!',
+   text:'Ez a fejlesztés a „Gyakorlatorientált felsőoktatás infrastrukturális és készségfejlesztése a BME-n" című projekt keretében valósult meg (Projektazonosító: RRF-2.1.2-21-2022-00005), az Európai Unió és Magyarország Kormánya által finanszírozott Helyreállítási és Ellenállóképességi Eszközből nyújtott, vissza nem térítendő támogatásnak köszönhetően.'}
+];
+
+/* ───────── renderelés ───────── */
+const deck=$id('deck');
+function $id(i){return document.getElementById(i);}
+function esc(s){return s;}
+function secOf(s){return s.sec?SEC[s.sec]:null;}
+function head(s){const c=secOf(s); return '<div class="head"><div class="kicker" style="color:'+c.c+'">'+c.n+'</div><div class="title">'+s.t+'</div><div class="rule" style="background:'+c.c+'"></div></div>';}
+function bulletList(items,col){return '<ul class="big">'+items.map(x=>'<li style="">'+x.replace('<li','<li')+'</li>').map(x=>x).join('')+'</ul>';}
+function renderSlide(s){
+  const c=secOf(s);
+  if(s.type==='title') return '<div class="slide title-s"><div><div class="ti-eyebrow">Alapozás · Geotechnika</div><div class="ti-h">'+s.t+'</div><div class="ti-sub">'+s.sub+'</div><div class="ti-meta">'+s.meta+'</div></div></div>';
+  if(s.type==='section') return '<div class="slide section-s" style="background:linear-gradient(135deg,'+c.c+',#0e2138)"><div><div class="se-n">'+s.n+'</div><div class="se-t">'+(s.t2||c.n)+'</div>'+(s.sub?'<div class="se-s">'+s.sub+'</div>':'')+'</div></div>';
+  if(s.type==='closing') return '<div class="slide closing-s"><div><div class="cl-h">'+s.t+'</div><div class="cl-t">'+s.text+'</div><img class="lg" src="'+I+'../logo.jpg" alt="Támogatói logó" onerror="this.style.display=\'none\'"></div></div>';
+  let body='';
+  const ul=(items)=>{let h='<ul class="big">';items.forEach(x=>{h+='<li><span style="position:absolute;left:4px;top:13px;width:12px;height:12px;border-radius:3px;background:'+c.c+'"></span>'+x+'</li>';});return h+'</ul>';};
+  if(s.type==='lead') body='<div class="bodyA"><div class="lead">'+s.lead+'</div></div>';
+  else if(s.type==='bullets') body='<div class="bodyA">'+ul(s.items)+(s.note?'<div class="lead" style="font-size:19px;color:var(--ink3);margin-top:auto"><b style="color:'+c.c+'">▸ </b>'+s.note+'</div>':'')+'</div>';
+  else if(s.type==='image') body='<div class="bodyA"><div class="imgwrap"><img src="'+I+s.img+'" loading="lazy" alt=""></div>'+(s.cap?'<div class="cap">'+s.cap+'</div>':'')+'</div>';
+  else if(s.type==='two') body='<div class="bodyA"><div class="two"><div>'+ul(s.items)+'</div><div class="col-img"><div style="display:flex;flex-direction:column;max-height:100%"><img src="'+I+s.img+'" loading="lazy" alt="">'+(s.cap?'<div class="cap">'+s.cap+'</div>':'')+'</div></div></div></div>';
+  else if(s.type==='gallery'){ let figs=s.imgs.map(im=>'<figure><div class="gimg"><img src="'+I+im.src+'" loading="lazy" alt=""></div><figcaption>'+im.cap+'</figcaption></figure>').join('');
+    body='<div class="bodyA"><div class="gal g'+s.g+'">'+figs+'</div>'+(s.note?'<div class="cap" style="font-size:16px;color:var(--ink2);margin-top:12px">'+s.note+'</div>':'')+'</div>'; }
+  return '<div class="slide">'+head(s)+body+'</div>';
+}
+deck.innerHTML=SL.map(renderSlide).join('');
+const slides=[...deck.querySelectorAll('.slide')];
+
+/* ───────── léptetés ───────── */
+let cur=0;
+function show(i){
+  i=Math.max(0,Math.min(slides.length-1,i));
+  slides.forEach((el,k)=>{ el.classList.toggle('on',k===i); el.classList.toggle('prev',k<i); });
+  cur=i;
+  $id('counter').textContent=(i+1)+' / '+slides.length;
+  $id('hudFill').style.width=((i)/(slides.length-1)*100)+'%';
+  const s=SL[i], c=secOf(s);
+  $id('secLabel').textContent = s.type==='title'?'Talajfelderítés' : s.type==='closing'?'' : (c?c.n:'');
+  if(window.__typo){ const el=slides[i]; window.__typo(el); }
+}
+function next(){ if(cur<slides.length-1) show(cur+1); }
+function prev(){ if(cur>0) show(cur-1); }
+$id('nextBtn').onclick=next; $id('prevBtn').onclick=prev;
+document.addEventListener('keydown',e=>{
+  if($id('menu').classList.contains('open')){ if(e.key==='Escape'||e.key.toLowerCase()==='m'){toggleMenu(false);} return; }
+  if(['ArrowRight',' ','PageDown','Enter'].includes(e.key)){e.preventDefault();next();}
+  else if(['ArrowLeft','PageUp','Backspace'].includes(e.key)){e.preventDefault();prev();}
+  else if(e.key==='Home'){show(0);} else if(e.key==='End'){show(slides.length-1);}
+  else if(e.key.toLowerCase()==='f'){toggleFs();}
+  else if(e.key.toLowerCase()==='m'){toggleMenu();}
+});
+/* érintés / swipe */
+let tx=0; deck.addEventListener('touchstart',e=>tx=e.touches[0].clientX,{passive:true});
+deck.addEventListener('touchend',e=>{const dx=e.changedTouches[0].clientX-tx; if(Math.abs(dx)>50){dx<0?next():prev();}},{passive:true});
+/* a dián kattintás: jobb fél = előre, bal fél = vissza */
+deck.addEventListener('click',e=>{ const r=deck.getBoundingClientRect(); (e.clientX-r.left)/r.width>0.5?next():prev(); });
+
+/* teljes képernyő */
+function toggleFs(){ if(!document.fullscreenElement){document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();} else {document.exitFullscreen&&document.exitFullscreen();} }
+$id('fsBtn').onclick=toggleFs;
+
+/* menü (szekciók) */
+const menuItems=SL.map((s,i)=>({i,s})).filter(o=>o.s.type==='section'||o.s.type==='title'||o.s.type==='closing');
+$id('menuGrid').innerHTML=menuItems.map(o=>{
+  const s=o.s, c=secOf(s); const label = s.type==='title'?'Címlap':s.type==='closing'?'Zárás':(c?c.n:'');
+  const num = s.type==='section'?s.n:'';
+  return '<button class="mitem" data-i="'+o.i+'"><span class="mn">'+(num?num+' ·':'')+' '+(s.type==='section'?'szekció':s.type)+'</span>'+label+'</button>';
+}).join('');
+$id('menuGrid').addEventListener('click',e=>{const b=e.target.closest('.mitem');if(!b)return; show(+b.dataset.i); toggleMenu(false);});
+function toggleMenu(force){ const m=$id('menu'); const open=force===undefined?!m.classList.contains('open'):force; m.classList.toggle('open',open); }
+$id('menuBtn').onclick=()=>toggleMenu();
+$id('menu').addEventListener('click',e=>{ if(e.target===$id('menu'))toggleMenu(false); });
+
+/* a stage skálázása 1280×720-ra */
+function fit(){ const sc=Math.min(window.innerWidth/1280, window.innerHeight/720); deck.style.transform='scale('+sc+')'; }
+window.addEventListener('resize',fit); fit();
+setTimeout(()=>{ const h=$id('hint'); if(h) h.style.transition='opacity 1s'; },4000);
+setTimeout(()=>{ const h=$id('hint'); if(h) h.style.opacity='0'; },6000);
+show(0);
+</script>
+<script>
+/* Magyar tipográfia — automatikus sortörés-szabályok */
+(function(){
+  "use strict";
+  var NBSP=' ', WJ='⁠';
+  function fix(s){
+    s=s.replace(/([.!?…][)"'»”’]?\s+\S+) (?=\S)/g,'$1'+NBSP);
+    s=s.replace(/(^|[\s(„"'«»–—])(a|az|s|e|é|és|is) (?=\S)/gi,'$1$2'+NBSP);
+    s=s.replace(/ (?=[=+−·×<>≈≥≤≠\/])/g,NBSP);
+    s=s.replace(/([=+−·×<>≈≥≤≠\/]) /g,'$1'+NBSP);
+    s=s.replace(/(\d) (?=(?:kPa|MPa|GPa|kN\/m³|kN|cm|mm|km|kg|°C|°|%|m|t|mg\/l|év)(?:[\s.,;:!?)\]–—]|$))/g,'$1'+NBSP);
+    s=s.replace(/([0-9A-Za-zÀ-ſ])([\-–—])([0-9A-Za-zÀ-ſ])/g,'$1'+WJ+'$2'+WJ+'$3');
+    return s;
+  }
+  var SKIP={SCRIPT:1,STYLE:1,CODE:1,PRE:1,KBD:1,SAMP:1,INPUT:1,TEXTAREA:1,SELECT:1,OPTION:1,NOSCRIPT:1};
+  function walk(el){ if(!el)return;
+    for(var n=el.firstChild;n;n=n.nextSibling){
+      if(n.nodeType===3){ var t=n.nodeValue; if(t&&/\S/.test(t)){ var nt=fix(t); if(nt!==t)n.nodeValue=nt; } }
+      else if(n.nodeType===1){ var tag=n.tagName?n.tagName.toUpperCase():''; if(SKIP[tag])continue;
+        if(n.namespaceURI==='http://www.w3.org/2000/svg')continue;
+        if(n.classList&&n.classList.contains('nowrap'))continue; walk(n); }
+    }
+  }
+  window.__typo=function(el){ walk(el||document.body); };
+  function run(){ walk(document.body); }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',run); else run();
+})();
+</script>
+</body>
+</html>
