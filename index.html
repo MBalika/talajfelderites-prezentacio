@@ -120,6 +120,124 @@ const SEC={
   viz:{n:'Talajvíz felderítése',c:'#2f6aa8'}
 };
 const I='img/';
+/* ───────── generált SVG-ábrák ───────── */
+const FM='JetBrains Mono,monospace', FB='Segoe UI,sans-serif';
+function svgWrap(inner,vb){return '<svg viewBox="'+vb+'" style="max-width:100%;max-height:540px;width:100%;height:auto" xmlns="http://www.w3.org/2000/svg">'+inner+'</svg>';}
+function DG_flow(){
+  const st=[['Adatgyűjtés','helyszíni szemle + adattár','#1f8aa0'],['Feltárási terv','típus · mélység · mennyiség','#b06a2c'],['Talajfeltárás','fúrás · gödör · szonda · geofizika','#3d6aa0'],['Talajvizsgálati jelentés','értékelés · paraméterek','#6a4f8c']];
+  let g='<defs><marker id="ar" markerWidth="12" markerHeight="12" refX="8" refY="3" orient="auto"><path d="M0 0 L8 3 L0 6 z" fill="#6b7888"/></marker></defs>';
+  let x=24, bw=256, gap=44, y=190, h=150;
+  st.forEach((s,i)=>{
+    g+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+h+'" rx="16" fill="'+s[2]+'" fill-opacity="0.12" stroke="'+s[2]+'" stroke-width="2.5"/>';
+    g+='<text x="'+(x+bw/2)+'" y="'+(y+62)+'" text-anchor="middle" font-family="'+FB+'" font-weight="800" font-size="27" fill="'+s[2]+'">'+s[0]+'</text>';
+    g+='<text x="'+(x+bw/2)+'" y="'+(y+98)+'" text-anchor="middle" font-family="'+FM+'" font-size="15" fill="#3a4858">'+s[1]+'</text>';
+    if(i<3) g+='<path d="M'+(x+bw+8)+' '+(y+h/2)+' L'+(x+bw+gap-10)+' '+(y+h/2)+'" stroke="#6b7888" stroke-width="3" marker-end="url(#ar)"/>';
+    x+=bw+gap;
+  });
+  return svgWrap(g,'0 0 '+x+' 540');
+}
+function DG_cpt(){
+  const lay=[[0,4,'Homok','#e6c25a'],[4,9,'Agyag','#a9895a'],[9,11,'Törmelékes','#bf7440'],[11,18,'Agyag','#a9895a']];
+  const dz=0.25, pts=[];
+  for(let z=0;z<=18.0001;z+=dz){ let qc,Rf;
+    if(z<4){qc=8+3.5*Math.sin(z*1.3);Rf=0.5+0.2*Math.sin(z*2);}
+    else if(z<9){qc=1.0+0.4*Math.sin(z);Rf=3.6+1.1*Math.sin(z*1.5);}
+    else if(z<11){qc=9.5+3*Math.sin(z*3);Rf=0.6;}
+    else{qc=1.3+0.5*Math.sin(z*0.8);Rf=4+Math.sin(z);}
+    pts.push({z,qc:Math.max(0.3,qc),Rf:Math.max(0.1,Rf),u:Math.max(0,9.81*(z-2))}); }
+  const top=46,bottom=506,Zmax=18, yOf=z=>top+z/Zmax*(bottom-top);
+  let g='';
+  // rétegoszlop
+  const lx=40,lw=84;
+  lay.forEach(L=>{ g+='<rect x="'+lx+'" y="'+yOf(L[0]).toFixed(1)+'" width="'+lw+'" height="'+(yOf(L[1])-yOf(L[0])).toFixed(1)+'" fill="'+L[3]+'" fill-opacity="0.5" stroke="#8a7350"/>';
+    g+='<text x="'+(lx+lw/2)+'" y="'+((yOf(L[0])+yOf(L[1]))/2+4).toFixed(1)+'" text-anchor="middle" font-family="'+FM+'" font-size="13" fill="#3a2e1a" transform="rotate(-90 '+(lx+lw/2)+' '+((yOf(L[0])+yOf(L[1]))/2).toFixed(1)+')">'+L[2]+'</text>'; });
+  g+='<text x="'+(lx+lw/2)+'" y="30" text-anchor="middle" font-family="'+FM+'" font-size="13" fill="#6b7888">réteg</text>';
+  // mélységskála
+  for(let z=0;z<=18;z+=3){ g+='<text x="'+(lx-8)+'" y="'+(yOf(z)+4).toFixed(1)+'" text-anchor="end" font-family="'+FM+'" font-size="12" fill="#9aa3ad">'+z+'</text>'; }
+  g+='<text x="14" y="'+((top+bottom)/2).toFixed(1)+'" font-family="'+FM+'" font-size="12" fill="#6b7888" transform="rotate(-90 14 '+((top+bottom)/2).toFixed(1)+')">mélység z [m]</text>';
+  function panel(px,pw,title,key,vmax,unit,col){
+    g+='<rect x="'+px+'" y="'+top+'" width="'+pw+'" height="'+(bottom-top)+'" fill="#fff" stroke="#d6dbe4"/>';
+    [0.25,0.5,0.75,1].forEach(q=>{const gx=px+q*pw; g+='<line x1="'+gx+'" y1="'+top+'" x2="'+gx+'" y2="'+bottom+'" stroke="#eef0f4"/>';});
+    let d='M'; pts.forEach((p,i)=>{ d+=(i?' L':'')+(px+Math.min(1,p[key]/vmax)*pw).toFixed(1)+' '+yOf(p.z).toFixed(1); });
+    g+='<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2"/>';
+    g+='<text x="'+(px+pw/2)+'" y="30" text-anchor="middle" font-family="'+FB+'" font-weight="700" font-size="16" fill="'+col+'">'+title+'</text>';
+    g+='<text x="'+px+'" y="'+(bottom+20)+'" font-family="'+FM+'" font-size="11" fill="#9aa3ad">0</text>';
+    g+='<text x="'+(px+pw)+'" y="'+(bottom+20)+'" text-anchor="end" font-family="'+FM+'" font-size="11" fill="#9aa3ad">'+vmax+' '+unit+'</text>';
+  }
+  panel(180,250,'qc — csúcsellenállás','qc',16,'MPa','#c2521f');
+  panel(470,250,'Rf — súrlódási arány','Rf',6,'%','#2e7d4f');
+  panel(760,250,'u — pórusvíznyomás','u',180,'kPa','#2f6aa8');
+  return svgWrap(g,'0 0 1040 540');
+}
+function DG_gw(){
+  let g='', W=1100, surf=120;
+  // rétegek
+  g+='<rect x="0" y="'+surf+'" width="'+W+'" height="120" fill="#e6c25a" fill-opacity="0.55"/>';            // homok (felső, szabad tv)
+  g+='<rect x="0" y="240" width="'+W+'" height="70" fill="#a9895a" fill-opacity="0.6"/>';                    // agyag (záró)
+  g+='<rect x="0" y="310" width="'+W+'" height="120" fill="#cdb86a" fill-opacity="0.6"/>';                   // homok (rétegvíz)
+  g+='<rect x="0" y="430" width="'+W+'" height="70" fill="#8a6f48" fill-opacity="0.7"/>';                    // alsó záró
+  g+='<line x1="0" y1="'+surf+'" x2="'+W+'" y2="'+surf+'" stroke="#8c7a55" stroke-width="2"/>';
+  // szabad felszínű talajvíz
+  g+='<line x1="0" y1="175" x2="'+W+'" y2="175" stroke="#2f6aa8" stroke-width="2.5" stroke-dasharray="8 5"/>';
+  g+='<path d="M40 175 l10 0 l-5 8 z" fill="#2f6aa8"/>';
+  g+='<text x="60" y="170" font-family="'+FM+'" font-size="15" fill="#1f4f86">① szabad felszínű talajvíz</text>';
+  // lebegő (perched) lencse
+  g+='<path d="M300 150 q90 -26 180 0 q-90 22 -180 0 Z" fill="#7fb0d8" fill-opacity="0.7" stroke="#2f6aa8"/>';
+  g+='<text x="300" y="143" font-family="'+FM+'" font-size="14" fill="#1f4f86">⑤ lebegő talajvíz</text>';
+  // nyomás alatti (rétegvíz) + piezometrikus szint (artézi)
+  g+='<text x="60" y="378" font-family="'+FM+'" font-size="15" fill="#1f4f86">③ nyomás alatti (rétegvíz)</text>';
+  g+='<line x1="0" y1="150" x2="'+W+'" y2="150" stroke="#a32626" stroke-width="2" stroke-dasharray="3 4"/>';
+  g+='<text x="'+(W-12)+'" y="144" text-anchor="end" font-family="'+FM+'" font-size="13" fill="#a32626">nyomásszint (piezometrikus) — artézi</text>';
+  // rétegcímkék
+  g+='<text x="'+(W-12)+'" y="200" text-anchor="end" font-family="'+FM+'" font-size="13" fill="#5a4a28">homok (vízadó)</text>';
+  g+='<text x="'+(W-12)+'" y="282" text-anchor="end" font-family="'+FM+'" font-size="13" fill="#3a2e1a">agyag (vízzáró)</text>';
+  g+='<text x="'+(W-12)+'" y="378" text-anchor="end" font-family="'+FM+'" font-size="13" fill="#5a4a28">homok (vízadó)</text>';
+  return svgWrap(g,'0 0 '+W+' 520');
+}
+function DG_depth(){
+  let g='', cx=560, surf=70;
+  // talaj
+  g+='<rect x="0" y="'+surf+'" width="1120" height="450" fill="#e3d9c6"/>';
+  g+='<line x1="0" y1="'+surf+'" x2="1120" y2="'+surf+'" stroke="#8c7a55" stroke-width="2"/>';
+  // épület + alaptest
+  g+='<rect x="'+(cx-150)+'" y="'+(surf-90)+'" width="300" height="80" fill="#9aa3ad" stroke="#5f6973"/>';
+  g+='<rect x="'+(cx-90)+'" y="'+(surf-6)+'" width="180" height="26" fill="#7c8590" stroke="#5f6973"/>';
+  g+='<text x="'+cx+'" y="'+(surf-44)+'" text-anchor="middle" font-family="'+FB+'" font-weight="700" font-size="20" fill="#fff">épület</text>';
+  // feszültséghagyma (koncentrikus ellipszisek)
+  [[150,90,'#c2521f',0.30],[230,180,'#c2521f',0.18],[320,280,'#c2521f',0.10]].forEach(e=>{
+    g+='<ellipse cx="'+cx+'" cy="'+(surf+e[1])+'" rx="'+e[0]+'" ry="'+e[1]+'" fill="'+e[2]+'" fill-opacity="'+e[3]+'"/>'; });
+  g+='<text x="'+(cx+200)+'" y="'+(surf+150)+'" font-family="'+FM+'" font-size="14" fill="#a8431a">feszültséghagyma</text>';
+  // za mélység jel
+  const za=surf+300;
+  g+='<line x1="'+(cx+350)+'" y1="'+surf+'" x2="'+(cx+350)+'" y2="'+za+'" stroke="#16202e" stroke-width="1.5" stroke-dasharray="4 4"/>';
+  g+='<line x1="'+(cx+340)+'" y1="'+za+'" x2="'+(cx+360)+'" y2="'+za+'" stroke="#16202e" stroke-width="2"/>';
+  g+='<text x="'+(cx+360)+'" y="'+((surf+za)/2).toFixed(0)+'" font-family="'+FM+'" font-size="16" fill="#16202e">z<tspan baseline-shift="sub" font-size="11">a</tspan> (feltárási mélység)</text>';
+  // szabály
+  g+='<rect x="40" y="120" width="360" height="150" rx="12" fill="#fff" fill-opacity="0.92" stroke="#2e7d4f"/>';
+  g+='<text x="60" y="152" font-family="'+FB+'" font-weight="700" font-size="18" fill="#2e7d4f">Javasolt feltárási mélység</text>';
+  g+='<text x="60" y="184" font-family="'+FM+'" font-size="16" fill="#3a4858">Különálló alap: z_a ≥ 4–6 m</text>';
+  g+='<text x="60" y="210" font-family="'+FM+'" font-size="16" fill="#3a4858">és z_a ≥ 3,0 · b_min</text>';
+  g+='<text x="60" y="240" font-family="'+FM+'" font-size="16" fill="#3a4858">Lemezalap: z_a ≥ 1,5 · b_B</text>';
+  return svgWrap(g,'0 0 1120 540');
+}
+function DG_grid(){
+  let g='';
+  g+='<rect x="60" y="60" width="600" height="400" rx="6" fill="#dce8f5" stroke="#3d6aa0" stroke-width="2"/>';
+  g+='<text x="360" y="40" text-anchor="middle" font-family="'+FB+'" font-weight="700" font-size="20" fill="#3d6aa0">épület alaprajza (feltárási háló)</text>';
+  const xs=[120,360,600], ys=[120,280,400];
+  xs.forEach(px=>ys.forEach(py=>{ g+='<g><line x1="'+(px-11)+'" y1="'+(py-11)+'" x2="'+(px+11)+'" y2="'+(py+11)+'" stroke="#a32626" stroke-width="3"/><line x1="'+(px-11)+'" y1="'+(py+11)+'" x2="'+(px+11)+'" y2="'+(py-11)+'" stroke="#a32626" stroke-width="3"/></g>'; }));
+  // távméret
+  g+='<line x1="120" y1="490" x2="360" y2="490" stroke="#16202e" stroke-width="1.5" marker-start="url(#a2)" marker-end="url(#a2)"/>';
+  g+='<defs><marker id="a2" markerWidth="10" markerHeight="10" refX="3" refY="3" orient="auto"><path d="M0 0 L6 3 L0 6 z" fill="#16202e"/></marker></defs>';
+  g+='<text x="240" y="484" text-anchor="middle" font-family="'+FM+'" font-size="15" fill="#16202e">25–40 m</text>';
+  // jelmagyarázat
+  g+='<g transform="translate(720,120)"><line x1="0" y1="0" x2="22" y2="22" stroke="#a32626" stroke-width="3"/><line x1="0" y1="22" x2="22" y2="0" stroke="#a32626" stroke-width="3"/><text x="34" y="18" font-family="'+FM+'" font-size="16" fill="#3a4858">feltárási pont</text></g>';
+  g+='<text x="720" y="190" font-family="'+FM+'" font-size="15" fill="#3a4858">• kisebb épület: 2–3 db</text>';
+  g+='<text x="720" y="222" font-family="'+FM+'" font-size="15" fill="#3a4858">• csarnok: max. 25–40 m</text>';
+  g+='<text x="720" y="254" font-family="'+FM+'" font-size="15" fill="#3a4858">• nagy terület: 40–60 m háló</text>';
+  g+='<text x="720" y="286" font-family="'+FM+'" font-size="15" fill="#3a4858">• híd: támaszonként 1–2 + CPT</text>';
+  return svgWrap(g,'0 0 1040 520');
+}
 /* ───────── diák ───────── */
 const SL=[
  {type:'title', t:'Talajfelderítés', sub:'Az altalaj megismerése — a biztonságos és gazdaságos alapozás első lépése. Interaktív, vetíthető előadás.', meta:'Alapozás · BME Építőmérnöki Kar · Geotechnika és Mérnökgeológia Tanszék · Dr. Móczár Balázs'},
@@ -130,6 +248,7 @@ const SL=[
    '<b>Adatgyűjtés</b> — helyszíni szemle és adattári (meglévő) adatok',
    '<b>Talajfeltárás</b> — fúrások, kutatógödör, mintavétel, geofizika, szondázások',
    '<b>Talajvizsgálati jelentés</b> — az eredmények bemutatása és értékelése'], note:'A felderítés mélysége és sűrűsége a létesítmény jellegétől és a talajviszonyoktól függ.'},
+ {type:'diagram', sec:'cel', t:'A talajfelderítés folyamata', svg:DG_flow(), note:'Adatgyűjtés → feltárási terv → tényleges feltárás → összefoglaló talajvizsgálati jelentés.'},
 
  {type:'section', sec:'adat', n:'02'},
  {type:'bullets', sec:'adat', t:'Helyszíni szemle — főbb szempontok', items:[
@@ -174,6 +293,14 @@ const SL=[
    '<b>+</b> nagy feltárásmennyiségnél gazdaságos, <b>50–60 m</b>-ig mélyíthető',
    '<b>–</b> kis mennyiségnél gazdaságtalan; nem minden helyszín járható',
    'Nehezen megközelíthető helyre <b>lánctalpas</b> gép, teherautón szállítva'], cap:'Nagyátmérőjű fúrógép'},
+ {type:'gallery', sec:'furas', t:'Nagyátmérőjű fúrógépek', g:3, imgs:[
+   {src:'furogep-nagy.jpg',cap:'Nagy fúrógép'},
+   {src:'furogep-nagy2.jpg',cap:'Lánctalpas gép'},
+   {src:'furas-alagutban.jpg',cap:'Fúrás alagútban'}]},
+ {type:'gallery', sec:'furas', t:'Spirálok, vágófejek, mintavétel', g:3, imgs:[
+   {src:'vagoeel-tipusok.jpg',cap:'Vágóél-típusok'},
+   {src:'spiral-mintaval.jpg',cap:'Spirál mintával'},
+   {src:'csospiral-mintavevovel.jpg',cap:'Csőspirál mintavevővel'}]},
  {type:'two', sec:'furas', t:'Üreges csőspirál (Hollow stem auger)', img:'csospiral-furas-kozben.jpg', items:[
    'A csőspirál elejéhez <b>üreges vágófej</b> csatlakozik',
    'A spirál belsejében <b>mintavevő</b> működtethető — együtt vagy függetlenül',
@@ -195,6 +322,7 @@ const SL=[
    'A mintákat <b>zavartság</b> szerint 1–5 <b>minőségi osztályba</b> soroljuk',
    'A mintavételi <b>módszereket</b> A, B, C <b>kategóriába</b>',
    '<b>A</b> kategória → 1–5 · <b>B</b> → 3–5 · <b>C</b> → 5 osztályú minta nyerhető'], note:'Szabvány: MSZE CEN ISO/TS 22475-1.'},
+ {type:'matrix', sec:'minta', t:'Mintaminőség — kategória × osztály', html:(function(){var G='<td style="background:#e2f1e8;color:#2e7d4f;font-weight:800;text-align:center">✓</td>',N='<td style="color:#b6bcc6;text-align:center">—</td>';return '<table class="t" style="font-size:22px"><thead><tr><th style="background:#a8553a">Kategória \\ Minőségi osztály</th><th style="background:#a8553a">1 (legjobb)</th><th style="background:#a8553a">2</th><th style="background:#a8553a">3</th><th style="background:#a8553a">4</th><th style="background:#a8553a">5 (zavart)</th></tr></thead><tbody><tr><td class="m"><b>A</b></td>'+G+G+G+G+G+'</tr><tr><td class="m"><b>B</b></td>'+N+N+G+G+G+'</tr><tr><td class="m"><b>C</b></td>'+N+N+N+N+G+'</tr></tbody></table>';})(), note:'A mintavételi kategória (A/B/C) határozza meg, milyen minőségi osztályú (1–5) minta nyerhető.'},
  {type:'gallery', sec:'minta', t:'Zavartalan és zavart minta', g:3, imgs:[
    {src:'zavartalan-mintavetel.jpg',cap:'Zavartalan (1–2. o.)'},
    {src:'zavart-mintavetel.jpg',cap:'(Részben) zavart (3–4. o.)'},
@@ -216,6 +344,10 @@ const SL=[
  {type:'gallery', sec:'geofiz', t:'Mágneses mérés és szeizmika', g:2, imgs:[
    {src:'geofiz-magneses.jpg',cap:'Mágneses mérés (magnetométer)'},
    {src:'geofiz-szeizmika.jpg',cap:'Szárazföldi szeizmika (geofonok)'}], note:'Mágneses: a Föld mágneses tere, kontaktus nélkül, szelvény/rácsháló. Szeizmika: gerjesztett rugalmas hullámok, geofonok, terítés akár több km.'},
+ {type:'gallery', sec:'geofiz', t:'Geofizikai eredmények', g:3, imgs:[
+   {src:'geofiz-foldradar-meres.jpg',cap:'Földradar-szelvény'},
+   {src:'geofiz-magneses-eredmeny.jpg',cap:'Mágneses térkép'},
+   {src:'geofiz-szeizmika-eredmeny.jpg',cap:'Szeizmikus szelvény'}], note:'A mérésekből szelvények és térképek készülnek a réteghatárokról, objektumokról, üregekről.'},
 
  {type:'section', sec:'szonda', n:'07', sub:'Talajfeltárás — szondázások'},
  {type:'bullets', sec:'szonda', t:'Szondázások — mi és hogyan', items:[
@@ -233,6 +365,7 @@ const SL=[
  {type:'bullets', sec:'szonda', t:'CPT — mit ad megbízhatóan?', items:[
    '<b>Megbízhatóan:</b> talajtípus, talajrétegződés, pórusvíznyomás, cölöpteherbírás',
    '<b>Közepesen:</b> szemcsés talaj φ′, kötött talaj drénezetlen nyírószilárdsága (c<sub>u</sub>)'], note:'A CPT a talajrétegződés és a cölöptervezés egyik legértékesebb terepi vizsgálata.'},
+ {type:'diagram', sec:'szonda', t:'CPT — mérési eredmények és értelmezés', svg:DG_cpt(), note:'Homokban nagy q_c és kis R_f; agyagban kicsi q_c, nagy R_f és pórusvíznyomás-többlet — a görbékből leolvasható a rétegződés.'},
  {type:'two', sec:'szonda', t:'DP — dinamikus szondázás', img:'dph-szondazas.jpg', items:[
    'Dynamic Probe — <b>ejtősúly</b> veri a kúpos csúcsot (90°)',
    'Mérjük az adott behatoláshoz tartozó <b>ütésszámot</b>',
@@ -240,6 +373,9 @@ const SL=[
  {type:'bullets', sec:'szonda', t:'DP — alkalmazás', items:[
    '<b>Közepesen:</b> talajrétegződés, szemcsés talajok (relatív) tömörsége',
    '<b>Jól:</b> homokban · <b>közepesen:</b> kavicsban']},
+ {type:'table', sec:'szonda', t:'Verőszondázás típusai (DP)', head:['Típus','Ejtősúly [kg]','Ejtési magasság [mm]','Jellemző'],
+   rows:[['DPL — könnyű','10','500','laza/közepes talaj, kis mélység'],['DPM — közepes','30','500','általános'],['DPH — nehéz','50','500','tömörebb talaj'],['DPSH — szupernehéz','63,5','750','tömör talaj, nagy mélység']],
+   note:'A behatoláshoz tartozó ütésszámból (pl. N₁₀) következtetünk a tömörségre; a nehezebb ejtősúly nagyobb mélységig vagy tömörebb talajban használható.'},
  {type:'two', sec:'szonda', t:'SPT — Standard Penetration Test', img:'spt-verses.jpg', items:[
    'Furatból, <b>ejtősúlyos</b> verés; szabványos eszköz és energia',
    'Az <b>N ütésszám</b> a jellemző mért adat',
@@ -252,6 +388,10 @@ const SL=[
    'Furatban <b>kitáguló henger</b> nyomja a talajt → terhelés–tágulás görbe',
    'Előfúrt (Menard, MPT) vagy <b>önlefúró</b> (SBP) változat',
    '<b>Jól:</b> vízszintes földnyomás, terhelés–alakváltozás összefüggés'], cap:'Menard-féle presszióméter'},
+ {type:'gallery', sec:'szonda', t:'Presszióméteres mérés', g:3, imgs:[
+   {src:'preszsziometer-meres.jpg',cap:'Mérés furatban'},
+   {src:'preszsziometer-onlefuro.jpg',cap:'Önlefúró (SBP)'},
+   {src:'preszsziometer-onlefuro2.jpg',cap:'Önlefúró fúrófej'}], note:'Bármely talajban, ahol a furat állékony marad (kavicsban, durva homokban nem). Az önlefúró minimálisan zavarja az eredeti talajállapotot.'},
  {type:'two', sec:'szonda', t:'Lapdilatométer (DMT)', img:'dmt-eszkoz.jpg', items:[
    'Lapos <b>acélpenge</b> membránját nyomással kitágítjuk',
    'Főleg <b>finomszemcsés</b> talajban',
@@ -260,6 +400,9 @@ const SL=[
    'Jórészt <b>empirikus</b> összefüggések',
    '<b>Helyszín- és geológiafüggő</b>',
    'Óvatos használat, <b>kalibráció</b> a helyi talajra'], note:'A szondázás gyors és folytonos, de a paraméterek tapasztalati képletekből jönnek — laborvizsgálattal érdemes hitelesíteni.'},
+ {type:'table', sec:'szonda', t:'Szondázások — összevetés', head:['Módszer','Mit mér / ad','Mire jó leginkább'],
+   rows:[['CPT(u)','q_c, f_s, u — folyamatos','rétegződés, talajtípus, cölöpteherbírás'],['DP','ütésszám — folyamatos','szemcsés talaj (relatív) tömörsége'],['SPT','N ütésszám + minta','tömörség, talajtípus (mintával)'],['VST','nyíró nyomaték','puha talaj c_u (drénezetlen)'],['Presszióméter','terhelés–tágulás görbe','vízszintes földnyomás, E'],['DMT','membrán-nyomások','c_u, E_oed, K0, OCR (finomszemcsés)']],
+   note:'Folyamatos: CPT, DP · szakaszos: SPT, VST, presszióméter, DMT.'},
 
  {type:'section', sec:'jelentes', n:'08'},
  {type:'bullets', sec:'jelentes', t:'Talajvizsgálati jelentés', items:[
@@ -277,17 +420,20 @@ const SL=[
    '<b>Mennyiség</b> — hány feltárás',
    '<b>Mélység</b> — meddig (a „határmélységig", amíg a teher hat)',
    '<b>Minőség</b> — milyen módszerekkel'], note:'Az MSZ EN 1997-2 javaslatai szerint — a rétegződésnek átfogóan megítélhetőnek kell lennie.'},
+ {type:'diagram', sec:'feltart', t:'A feltárás mélysége — a „határmélység"', svg:DG_depth(), note:'Addig kell feltárni, ameddig az új építmény terhe számottevő feszültségnövekményt okoz (feszültséghagyma).'},
  {type:'bullets', sec:'feltart', t:'Javasolt mélység és távolság', items:[
    'Különálló alaptest: <b>z<sub>a</sub> ≥ 4–6 m</b> és z<sub>a</sub> ≥ 3,0·b<sub>min</sub>',
    'Lemezalap: <b>z<sub>a</sub> ≥ 1,5·b<sub>B</sub></b> (b<sub>B</sub> a kisebbik szélesség)',
    'Kisebb épület: <b>min. 2–3</b> feltárás',
    'Magasépület / csarnok: min. 3, max. <b>25–40 m</b>-re; nagy terület: <b>40–60 m</b> háló'], note:'Hídnál támaszonként 1–2 fúrás + CPT; speciális szerkezetnél min. 3 (legalább egy CPT).'},
+ {type:'diagram', sec:'feltart', t:'A feltárási pontok elrendezése és távolsága', svg:DG_grid()},
 
  {type:'section', sec:'viz', n:'10'},
  {type:'bullets', sec:'viz', t:'Talajvíz felderítése — típusok', items:[
    '1 szabad felszínű · 2 nyomás alatti · 3 alsó emelet',
    '4 vízdóm · 5 lebegő talajvíz · 6 altalajvíz',
    '<b>„Értelmezett" vízszintek:</b> megütött / nyugalmi, becsült max. (karakterisztikus) / min., építési, <b>mértékadó (tervezési)</b>']},
+ {type:'diagram', sec:'viz', t:'Talajvíz típusok — keresztszelvény', svg:DG_gw(), note:'A szabad felszínű talajvíz a felső vízadóban; a nyomás alatti (rétegvíz) záró réteg alatt, piezometrikus (artézi) szinttel; a lebegő talajvíz egy vízzáró lencsén ül meg.'},
  {type:'bullets', sec:'viz', t:'Vízkémia és agresszivitás', items:[
    'Fő jellemzők: <b>szulfátion</b> és <b>pH</b> (sok más mellett)',
    'Betonszerkezetre kitéti osztályok (MSZ 4798-1): <b>XA1 / XA2 / XA3</b>',
@@ -317,6 +463,10 @@ function renderSlide(s){
   else if(s.type==='two') body='<div class="bodyA"><div class="two"><div>'+ul(s.items)+'</div><div class="col-img"><div style="display:flex;flex-direction:column;max-height:100%"><img src="'+I+s.img+'" loading="lazy" alt="">'+(s.cap?'<div class="cap">'+s.cap+'</div>':'')+'</div></div></div></div>';
   else if(s.type==='gallery'){ let figs=s.imgs.map(im=>'<figure><div class="gimg"><img src="'+I+im.src+'" loading="lazy" alt=""></div><figcaption>'+im.cap+'</figcaption></figure>').join('');
     body='<div class="bodyA"><div class="gal g'+s.g+'">'+figs+'</div>'+(s.note?'<div class="cap" style="font-size:16px;color:var(--ink2);margin-top:12px">'+s.note+'</div>':'')+'</div>'; }
+  else if(s.type==='diagram') body='<div class="bodyA"><div class="imgwrap">'+s.svg+'</div>'+(s.note?'<div class="cap" style="font-size:16px;color:var(--ink2)">'+s.note+'</div>':'')+'</div>';
+  else if(s.type==='diagramText') body='<div class="bodyA"><div class="two"><div>'+ul(s.items)+'</div><div class="col-img">'+s.svg+'</div></div></div>';
+  else if(s.type==='table'){ let h='<table class="t"><thead><tr>'+s.head.map(x=>'<th style="background:'+c.c+'">'+x+'</th>').join('')+'</tr></thead><tbody>'+s.rows.map(r=>'<tr>'+r.map((x,j)=>'<td class="'+(j>0?'m':'')+'">'+x+'</td>').join('')+'</tr>').join('')+'</tbody></table>'; body='<div class="bodyA">'+h+(s.note?'<div class="cap" style="font-size:15px;color:var(--ink2);margin-top:14px">'+s.note+'</div>':'')+'</div>'; }
+  else if(s.type==='matrix') body='<div class="bodyA">'+s.html+(s.note?'<div class="cap" style="font-size:16px;color:var(--ink2);margin-top:14px">'+s.note+'</div>':'')+'</div>';
   return '<div class="slide">'+head(s)+body+'</div>';
 }
 deck.innerHTML=SL.map(renderSlide).join('');
