@@ -126,12 +126,12 @@ function svgWrap(inner,vb){return '<svg viewBox="'+vb+'" style="max-width:100%;m
 function DG_flow(){
   const st=[['Adatgyűjtés','helyszíni szemle + adattár','#1f8aa0'],['Feltárási terv','típus · mélység · mennyiség','#b06a2c'],['Talajfeltárás','fúrás · gödör · szonda · geofizika','#3d6aa0'],['Talajvizsgálati jelentés','értékelés · paraméterek','#6a4f8c']];
   let g='<defs><marker id="ar" markerWidth="12" markerHeight="12" refX="8" refY="3" orient="auto"><path d="M0 0 L8 3 L0 6 z" fill="#6b7888"/></marker></defs>';
-  let x=24, bw=256, gap=44, y=190, h=150;
+  let x=20, bw=310, gap=42, y=188, h=152;
   st.forEach((s,i)=>{
     g+='<rect x="'+x+'" y="'+y+'" width="'+bw+'" height="'+h+'" rx="16" fill="'+s[2]+'" fill-opacity="0.12" stroke="'+s[2]+'" stroke-width="2.5"/>';
-    g+='<text x="'+(x+bw/2)+'" y="'+(y+62)+'" text-anchor="middle" font-family="'+FB+'" font-weight="800" font-size="27" fill="'+s[2]+'">'+s[0]+'</text>';
-    g+='<text x="'+(x+bw/2)+'" y="'+(y+98)+'" text-anchor="middle" font-family="'+FM+'" font-size="15" fill="#3a4858">'+s[1]+'</text>';
-    if(i<3) g+='<path d="M'+(x+bw+8)+' '+(y+h/2)+' L'+(x+bw+gap-10)+' '+(y+h/2)+'" stroke="#6b7888" stroke-width="3" marker-end="url(#ar)"/>';
+    g+='<text x="'+(x+bw/2)+'" y="'+(y+60)+'" text-anchor="middle" font-family="'+FB+'" font-weight="800" font-size="22" fill="'+s[2]+'">'+s[0]+'</text>';
+    g+='<text x="'+(x+bw/2)+'" y="'+(y+95)+'" text-anchor="middle" font-family="'+FM+'" font-size="13.5" fill="#3a4858">'+s[1]+'</text>';
+    if(i<3) g+='<path d="M'+(x+bw+8)+' '+(y+h/2)+' L'+(x+bw+gap-10)+' '+(y+h/2)+'" stroke="#6b7888" stroke-width="3.5" marker-end="url(#ar)"/>';
     x+=bw+gap;
   });
   return svgWrap(g,'0 0 '+x+' 540');
