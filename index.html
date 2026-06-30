@@ -238,6 +238,12 @@ function DG_grid(){
   g+='<text x="720" y="286" font-family="'+FM+'" font-size="15" fill="#3a4858">• híd: támaszonként 1–2 + CPT</text>';
   return svgWrap(g,'0 0 1040 520');
 }
+/* megbízhatóság / alkalmazhatóság — kétoszlopos kártyák */
+function REL(groups){
+  let h='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px 36px;align-content:start">';
+  groups.forEach(gp=>{ h+='<div><div style="font-family:'+FB+';font-weight:800;font-size:19px;color:'+gp.c+';margin-bottom:5px">'+gp.h+'</div><ul style="list-style:none;display:flex;flex-direction:column;gap:4px">'+gp.items.map(x=>'<li style="font-size:18px;line-height:1.25;color:#3a4858;padding-left:18px;position:relative"><span style="position:absolute;left:0;color:'+gp.c+'">›</span>'+x+'</li>').join('')+'</ul></div>'; });
+  return h+'</div>';
+}
 /* ───────── diák ───────── */
 const SL=[
  {type:'title', t:'Talajfelderítés', sub:'Az altalaj megismerése — a biztonságos és gazdaságos alapozás első lépése. Interaktív, vetíthető előadás.', meta:'Alapozás · BME Építőmérnöki Kar · Geotechnika és Mérnökgeológia Tanszék · Dr. Móczár Balázs'},
@@ -362,17 +368,23 @@ const SL=[
  {type:'gallery', sec:'szonda', t:'CPT — a csúcs', g:2, imgs:[
    {src:'cpt-csucs.jpg',cap:'CPTu mérőcsúcs'},
    {src:'cpt-belso.jpg',cap:'A csúcs belső felépítése'}]},
- {type:'bullets', sec:'szonda', t:'CPT — mit ad megbízhatóan?', items:[
-   '<b>Megbízhatóan:</b> talajtípus, talajrétegződés, pórusvíznyomás, cölöpteherbírás',
-   '<b>Közepesen:</b> szemcsés talaj φ′, kötött talaj drénezetlen nyírószilárdsága (c<sub>u</sub>)'], note:'A CPT a talajrétegződés és a cölöptervezés egyik legértékesebb terepi vizsgálata.'},
+ {type:'matrix', sec:'szonda', t:'CPT — mit ad, mire jó?', html:REL([
+   {h:'Megbízhatóan meghatározható', c:'#2e7d4f', items:['talajtípus','talajrétegződés','pórusvíznyomás','cölöpteherbírás']},
+   {h:'Közepes megbízhatósággal', c:'#b87514', items:['szemcsés talaj φ′ (belső súrlódási szög)','kötött talaj c_u (drénezetlen nyírószil.)','(relatív) tömörség','összenyomódási modulus','konszolidációs együttható','áteresztőképességi együttható','előterheltség (OCR)','cölöpsüllyedés']},
+   {h:'Jól alkalmazható', c:'#3d6aa0', items:['homok','iszap','agyag','tőzeg']},
+   {h:'Nem alkalmazható', c:'#a32626', items:['durva kavics','köves talaj','nagyon kemény agyag']}
+ ]), note:'A CPT a talajrétegződés és a cölöptervezés egyik legértékesebb terepi vizsgálata.'},
  {type:'diagram', sec:'szonda', t:'CPT — mérési eredmények és értelmezés', svg:DG_cpt(), note:'Homokban nagy q_c és kis R_f; agyagban kicsi q_c, nagy R_f és pórusvíznyomás-többlet — a görbékből leolvasható a rétegződés.'},
  {type:'two', sec:'szonda', t:'DP — dinamikus szondázás', img:'dph-szondazas.jpg', items:[
-   'Dynamic Probe — <b>ejtősúly</b> veri a kúpos csúcsot (90°)',
-   'Mérjük az adott behatoláshoz tartozó <b>ütésszámot</b>',
+   'Dynamic Probe — <b>ejtősúly</b> ejtegetésével verjük a kúpos csúcsot',
+   'Csúcs: <b>90°</b> kúpszög, vetületi terület <b>15 cm²</b>',
+   'Mért adat: <b>10 / 20 cm</b> behatoláshoz tartozó ütésszám (N₁₀ / N₂₀)',
    'Típusok: <b>DPL / DPM / DPH / DPSH</b> (egyre nehezebb ejtősúly)'], cap:'Dinamikus szondázás (DP)'},
- {type:'bullets', sec:'szonda', t:'DP — alkalmazás', items:[
-   '<b>Közepesen:</b> talajrétegződés, szemcsés talajok (relatív) tömörsége',
-   '<b>Jól:</b> homokban · <b>közepesen:</b> kavicsban']},
+ {type:'matrix', sec:'szonda', t:'DP — mit ad, mire jó?', html:REL([
+   {h:'Közepes megbízhatósággal', c:'#b87514', items:['talajrétegződés','szemcsés talajok (relatív) tömörsége']},
+   {h:'Jól alkalmazható', c:'#3d6aa0', items:['homok']},
+   {h:'Közepesen alkalmazható', c:'#7a6a3a', items:['kavics','iszap','agyag','tőzeg']}
+ ])},
  {type:'table', sec:'szonda', t:'Verőszondázás típusai (DP)', head:['Típus','Ejtősúly [kg]','Ejtési magasság [mm]','Jellemző'],
    rows:[['DPL — könnyű','10','500','laza/közepes talaj, kis mélység'],['DPM — közepes','30','500','általános'],['DPH — nehéz','50','500','tömörebb talaj'],['DPSH — szupernehéz','63,5','750','tömör talaj, nagy mélység']],
    note:'A behatoláshoz tartozó ütésszámból (pl. N₁₀) következtetünk a tömörségre; a nehezebb ejtősúly nagyobb mélységig vagy tömörebb talajban használható.'},
@@ -380,10 +392,21 @@ const SL=[
    'Furatból, <b>ejtősúlyos</b> verés; szabványos eszköz és energia',
    'Az <b>N ütésszám</b> a jellemző mért adat',
    '<b>Mintavétellel</b> jár → a talajtípus is meghatározható'], cap:'SPT verés a furatban'},
+ {type:'matrix', sec:'szonda', t:'SPT — mit ad, mire jó?', html:REL([
+   {h:'Jó megbízhatósággal', c:'#2e7d4f', items:['talajtípus (mintavétellel)']},
+   {h:'Közepes megbízhatósággal', c:'#b87514', items:['talajrétegződés','szemcsés talajok (relatív) tömörsége']},
+   {h:'Jól alkalmazható', c:'#3d6aa0', items:['homok','iszap','agyag','tőzeg']},
+   {h:'Közepesen alkalmazható', c:'#7a6a3a', items:['kavics']}
+ ])},
  {type:'two', sec:'szonda', t:'VST — szárnyas nyírószondázás', img:'vst-szarnyas.jpg', items:[
    'Vane Shear Test — <b>szárnyas fej</b> elforgatása a talajban',
    'A nyomatékból <b>puha talajok drénezetlen nyírószilárdsága</b> (c<sub>u</sub>)',
    'Jól: puha iszap/agyag, <b>tőzeg / szerves</b> talajok'], cap:'Szárnyas nyírószonda'},
+ {type:'matrix', sec:'szonda', t:'VST — mit ad, mire jó?', html:REL([
+   {h:'Jó megbízhatósággal', c:'#2e7d4f', items:['puha talajok drénezetlen nyírószilárdsága (c_u)']},
+   {h:'Közepes megbízhatósággal', c:'#b87514', items:['talajtípus','terhelés–alakváltozás összefüggés']},
+   {h:'Jól alkalmazható', c:'#3d6aa0', items:['puha iszap / agyag','tőzeg / szerves talajok']}
+ ])},
  {type:'two', sec:'szonda', t:'Presszióméter (MPT / SBP)', img:'preszsziometer-menard.jpg', items:[
    'Furatban <b>kitáguló henger</b> nyomja a talajt → terhelés–tágulás görbe',
    'Előfúrt (Menard, MPT) vagy <b>önlefúró</b> (SBP) változat',
@@ -392,6 +415,12 @@ const SL=[
    {src:'preszsziometer-meres.jpg',cap:'Mérés furatban'},
    {src:'preszsziometer-onlefuro.jpg',cap:'Önlefúró (SBP)'},
    {src:'preszsziometer-onlefuro2.jpg',cap:'Önlefúró fúrófej'}], note:'Bármely talajban, ahol a furat állékony marad (kavicsban, durva homokban nem). Az önlefúró minimálisan zavarja az eredeti talajállapotot.'},
+ {type:'matrix', sec:'szonda', t:'Presszióméter — mit ad, mire jó?', html:REL([
+   {h:'Jó megbízhatósággal', c:'#2e7d4f', items:['vízszintes földnyomás','terhelés–alakváltozás összefüggés']},
+   {h:'Közepes megbízhatósággal', c:'#b87514', items:['talajtípus','talajrétegződés','nyírószilárdsági paraméterek','tömörség','OCR, nyírási modulus']},
+   {h:'Jól alkalmazható', c:'#3d6aa0', items:['agyag']},
+   {h:'Közepesen / nem alkalmazható', c:'#a32626', items:['közepesen: homok, iszap, tőzeg','nem: kavics']}
+ ])},
  {type:'two', sec:'szonda', t:'Lapdilatométer (DMT)', img:'dmt-eszkoz.jpg', items:[
    'Lapos <b>acélpenge</b> membránját nyomással kitágítjuk',
    'Főleg <b>finomszemcsés</b> talajban',
@@ -406,20 +435,21 @@ const SL=[
 
  {type:'section', sec:'jelentes', n:'08'},
  {type:'bullets', sec:'jelentes', t:'Talajvizsgálati jelentés', items:[
-   'Helyszín, létesítmény bemutatása',
-   'Terepi és labor<b>vizsgálatok</b> körülményei és eredményei',
-   'Geológiai adatok, <b>szeizmicitás</b>, talajvíz',
-   'Az információk <b>értékelése</b>, geotechnikai paraméterek, javaslatok']},
+   '<b>Információk bemutatása:</b> helyszín és létesítmény; a terepi és laborvizsgálatok körülményei (hely, időpont, mód, közreműködők) és eredményei; geológiai adatok, szeizmicitás, talajvíz',
+   '<b>Információk értékelése:</b> az eredmények összefoglalása és értékelése',
+   '<b>Tervezési paraméterek</b> felvételére alkalmas adatbemutatás',
+   '<b>Talajszelvények:</b> helyszínrajz, fúrás-, réteg- és hossz-szelvény']},
  {type:'gallery', sec:'jelentes', t:'Az eredmények bemutatása', g:3, imgs:[
    {src:'peldaszelvenyek-helyszinrajz.jpg',cap:'Feltárási helyszínrajz'},
    {src:'pelda-furasszelveny.jpg',cap:'Fúrásszelvény'},
    {src:'pelda-retegszelveny.jpg',cap:'Réteg- / hossz-szelvény'}]},
 
  {type:'section', sec:'feltart', n:'09'},
- {type:'bullets', sec:'feltart', t:'Feltártság mértéke', items:[
-   '<b>Mennyiség</b> — hány feltárás',
-   '<b>Mélység</b> — meddig (a „határmélységig", amíg a teher hat)',
-   '<b>Minőség</b> — milyen módszerekkel'], note:'Az MSZ EN 1997-2 javaslatai szerint — a rétegződésnek átfogóan megítélhetőnek kell lennie.'},
+ {type:'bullets', sec:'feltart', t:'Feltártság mértéke (MSZ EN 1997-2)', items:[
+   '<b>Mélység</b> — a „határmélységig", amíg a teher számottevő (lásd köv. ábra)',
+   '<b>Szélesség</b> — amekkora területre az építmény hatása kiterjed; vonalasnál keresztszelvények',
+   '<b>Mennyiség</b> — magas építmény: max. 40 m háló · nagy terület: max. 60 m · vonalas: 20–200 m · speciális (híd, kémény): 2–6 alaptestenként',
+   '<b>Típus / minőség</b> — több feltárásnál célszerű többféle vizsgálatot végezni'], note:'A rétegződésnek átfogóan megítélhetőnek kell lennie.'},
  {type:'diagram', sec:'feltart', t:'A feltárás mélysége — a „határmélység"', svg:DG_depth(), note:'Addig kell feltárni, ameddig az új építmény terhe számottevő feszültségnövekményt okoz (feszültséghagyma).'},
  {type:'bullets', sec:'feltart', t:'Javasolt mélység és távolság', items:[
    'Különálló alaptest: <b>z<sub>a</sub> ≥ 4–6 m</b> és z<sub>a</sub> ≥ 3,0·b<sub>min</sub>',
@@ -437,7 +467,13 @@ const SL=[
  {type:'bullets', sec:'viz', t:'Vízkémia és agresszivitás', items:[
    'Fő jellemzők: <b>szulfátion</b> és <b>pH</b> (sok más mellett)',
    'Betonszerkezetre kitéti osztályok (MSZ 4798-1): <b>XA1 / XA2 / XA3</b>',
-   '< 200 mg/l nem agresszív · 200–600 XA1 · 600–3000 XA2 · 3000–6000 XA3'], note:'Hol számít: alapozási sík felvétele, munkagödör-víztelenítés, felúszás, betontartósság.'},
+   '< 200 mg/l nem agresszív · 200–600 XA1 · 600–3000 XA2 · 3000–6000 XA3'], note:'A kitéti osztályhoz védekezés tartozik: cementfajta, cementtartalom, min. betonminőség, szerkezetvastagság, betontakarás stb.'},
+ {type:'bullets', sec:'viz', t:'Hol játszik szerepet a talajvíz?', items:[
+   '<b>Alapozási sík</b> felvétele (építési vízszint felett)',
+   '<b>Munkagödör-víztelenítés</b>; <b>felúszási</b> veszély',
+   'Vízszint-ingadozás hatása a <b>talajfizikai jellemzőkre</b> (szilárdság, összenyomhatóság)',
+   'Talajvíz-<b>visszaduzzasztás</b> (pl. metróalagút, mélygarázs)',
+   '<b>Hidrológiai egyensúly</b> megbontása: vízkivétel, talajvízsüllyesztés, csőtörés, erdőirtás, bányanyitás, halastó/víztározó, csatornázás']},
 
  {type:'closing', t:'Köszönöm a figyelmet!',
    text:'Ez a fejlesztés a „Gyakorlatorientált felsőoktatás infrastrukturális és készségfejlesztése a BME-n" című projekt keretében valósult meg (Projektazonosító: RRF-2.1.2-21-2022-00005), az Európai Unió és Magyarország Kormánya által finanszírozott Helyreállítási és Ellenállóképességi Eszközből nyújtott, vissza nem térítendő támogatásnak köszönhetően.'}
